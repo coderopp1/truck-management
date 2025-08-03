@@ -4,15 +4,11 @@ import Home from "./pages/Home";
 import AddTruck from "./pages/AddTruck";
 
 function App() {
-  const [trucks, setTrucks] = useState([
-    { id: 1, name: "Truck A", type: "Loading" },
-    { id: 2, name: "Truck B", type: "Unloading" },
-  ]);
+  const [trucks, setTrucks] = useState([]);
 
-  const handleAddTruck = (name, type) => {
-    const newTruck = { id: trucks.length + 1, name, type };
-    setTrucks((prev) => [...prev, newTruck]);
-  };
+const handleAddTruck = (truck) => {
+  setTrucks((prev) => [...prev, { id: prev.length + 1, ...truck }]);
+};
 
   return (
     <Router>

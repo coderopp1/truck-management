@@ -1,72 +1,144 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function AddTruck({ onAddTruck }) {
-  const [vehicleNo, setVehicleNo] = useState("");
-  const [rstNo, setRstNo] = useState("");
-  const [partyName, setPartyName] = useState("");
-  const [transport, setTransport] = useState("");
-  const [grossWeight, setGrossWeight] = useState("");
-  const [tareWeight, setTareWeight] = useState("");
-  const [bags, setBags] = useState("");
-  const [remarks, setRemarks] = useState("");
-  const [type, setType] = useState("Loading"); // ✅ New field
+  const [truck, setTruck] = useState({
+    vehicleNo: "",
+    rstNo: "",
+    partyName: "",
+    transport: "",
+    grossWeight: "",
+    tareWeight: "",
+    noOfBags: "",
+    remarks: "",
+    type: "Loading",
+    unloadingPoint: "",
+  });
 
-  const netWeight = grossWeight && tareWeight ? grossWeight - tareWeight : "";
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    setTruck({ ...truck, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onAddTruck({
-      vehicleNo,
-      rstNo,
-      partyName,
-      transport,
-      grossWeight,
-      tareWeight,
-      netWeight,
-      bags,
-      remarks,
-      type, // ✅ Include truck type
-    });
 
-    // Reset form
-    setVehicleNo("");
-    setRstNo("");
-    setPartyName("");
-    setTransport("");
-    setGrossWeight("");
-    setTareWeight("");
-    setBags("");
-    setRemarks("");
-    setType("Loading");
+    // 1️⃣ Calculate net weight
+    const finalTruck = {
+      ...truck,
+      id: Date.now(),
+      grossWeight: parseInt(truck.grossWeight || 0),
+      tareWeight: parseInt(truck.tareWeight || 0),
+      netWeight:
+        parseInt(truck.grossWeight || 0) - parseInt(truck.tareWeight || 0),
+    };
+
+    // 2️⃣ Add to local state
+    onAddTruck(finalTruck);
+
+    // 3️⃣ Send to dummy API (simulate saving to server)
+    try {
+      await fetch("https://jsonplaceholder.typicode.com/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(finalTruck),
+      });
+    } catch (err) {
+      console.error("Failed to save truck to dummy API", err);
+    }
+
+    // 4️⃣ Redirect to Home page
+    navigate("/");
   };
 
   return (
-    <div>
-      <h2 className="text-xl font-bold mb-4">Add Truck Entry</h2>
-      <form onSubmit={handleSubmit} className="bg-white p-4 shadow rounded space-y-4 max-w-xl">
-        
-        <input className="w-full border rounded p-2" placeholder="Vehicle No" value={vehicleNo} onChange={(e) => setVehicleNo(e.target.value)} required />
-        <input className="w-full border rounded p-2" placeholder="RST No" value={rstNo} onChange={(e) => setRstNo(e.target.value)} required />
-        <input className="w-full border rounded p-2" placeholder="Party Name" value={partyName} onChange={(e) => setPartyName(e.target.value)} />
-        <input className="w-full border rounded p-2" placeholder="Transport" value={transport} onChange={(e) => setTransport(e.target.value)} />
-
-        <select className="w-full border rounded p-2" value={type} onChange={(e) => setType(e.target.value)}>
-          <option value="Loading">Loading</option>
-          <option value="Unloading">Unloading</option>
-        </select>
-
-        <input type="number" className="w-full border rounded p-2" placeholder="Gross Weight" value={grossWeight} onChange={(e) => setGrossWeight(Number(e.target.value))} />
-        <input type="number" className="w-full border rounded p-2" placeholder="Tare Weight" value={tareWeight} onChange={(e) => setTareWeight(Number(e.target.value))} />
-
-        <input type="text" className="w-full border rounded p-2 bg-gray-100" placeholder="Net Weight" value={netWeight} readOnly />
-
-        <input type="number" className="w-full border rounded p-2" placeholder="No. of Bags" value={bags} onChange={(e) => setBags(e.target.value)} />
-        <textarea className="w-full border rounded p-2" placeholder="Remarks" value={remarks} onChange={(e) => setRemarks(e.target.value)} />
-
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-          Add Entry
-        </button>
-      </form>
-    </div>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <input
+        name="vehicleNo"
+        placeholder="Vehicle No"
+        value={truck.vehicleNo}
+        onChange={handleChange}
+        className="border p-2 w-full"
+        required
+      />
+      <input
+        name="rstNo"
+        placeholder="RST No"
+        value={truck.rstNo}
+        onChange={handleChange}
+        className="border p-2 w-full"
+        required
+      />
+      <input
+        name="partyName"
+        placeholder="Party Name"
+        value={truck.partyName}
+        onChange={handleChange}
+        className="border p-2 w-full"
+        required
+      />
+      <input
+        name="transport"
+        placeholder="Transport"
+        value={truck.transport}
+        onChange={handleChange}
+        className="border p-2 w-full"
+        required
+      />
+      <input
+        name="grossWeight"
+        type="number"
+        placeholder="Gross Weight"
+        value={truck.grossWeight}
+        onChange={handleChange}
+        className="border p-2 w-full"
+        required
+      />
+      <input
+        name="tareWeight"
+        type="number"
+        placeholder="Tare Weight"
+        value={truck.tareWeight}
+        onChange={handleChange}
+        className="border p-2 w-full"
+        required
+      />
+      <input
+        name="noOfBags"
+        type="number"
+        placeholder="No of Bags"
+        value={truck.noOfBags}
+        onChange={handleChange}
+        className="border p-2 w-full"
+        required
+      />
+      <input
+        name="remarks"
+        placeholder="Remarks"
+        value={truck.remarks}
+        onChange={handleChange}
+        className="border p-2 w-full"
+      />
+      <select
+        name="type"
+        value={truck.type}
+        onChange={handleChange}
+        className="border p-2 w-full"
+      >
+        <option>Loading</option>
+        <option>Unloading</option>
+      </select>
+      <input
+        name="unloadingPoint"
+        placeholder="Unloading Point / Godown No"
+        value={truck.unloadingPoint}
+        onChange={handleChange}
+        className="border p-2 w-full"
+      />
+      <button className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
+        Add Truck
+      </button>
+    </form>
   );
 }
